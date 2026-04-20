@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор консолидированной ставки</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        .loan-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .loan-item span {
+            font-weight: bold;
+            color: #7f8c8d;
+            width: 20px;
+        }
+        .loan-item input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .loan-item input:focus {
+            border-color: #3498db;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.2s, opacity 0.2s;
+        }
+        .btn-add {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-add:hover:not(:disabled) { background-color: #2980b9; }
+        
+        .btn-remove {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-remove:hover:not(:disabled) { background-color: #c0392b; }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .btn-calc {
+            background-color: #2ecc71;
+            color: white;
+            width: 100%;
+            margin-top: 20px;
+            padding: 14px;
+            font-size: 16px;
+        }
+        .btn-calc:hover { background-color: #27ae60; }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.5;
+            display: none;
+        }
+        .result strong {
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Консолидация кредитов</h2>
+        
+        <div id="loans-container"></div>
+
+        <div class="controls">
+            <button class="btn-remove" id="btn-remove" onclick="removeLoan()" disabled>− Убрать кредит</button>
+            <button class="btn-add" id="btn-add" onclick="addLoan()">+ Добавить кредит</button>
+        </div>
+
+        <button class="btn-calc" onclick="calculate()">Рассчитать ставку</button>
+
+        <div class="error" id="error-msg">Пожалуйста, заполните корректно хотя бы один кредит (долг > 0).</div>
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        let currentLoans = 2;
+        const maxLoans = 7;
+        const minLoans = 2;
+
+        // Инициализация полей при загрузке страницы
+        window.onload = function() {
+            const container = document.getElementById('loans-container');
+            let htmlContent = '';
+            
+            for (let i = 1; i <= maxLoans; i++) {
+                let displayStyle = i <= currentLoans ? 'flex' : 'none';
+                htmlContent += `
+                    <div id="loan-${i}" class="loan-item" style="display: ${displayStyle};">
+                        <span>${i}.</span>
+                        <input type="number" id="principal-${i}" placeholder="Остаток долга (₽)" min="0" step="0.01">
+                        <input type="number" id="rate-${i}" placeholder="Ставка (%)" min="0" step="0.01">
+                    </div>
+                `;
+            }
+            container.innerHTML = htmlContent;
+        };
+
+        // Обновление видимости строк
+        function updateVisibility() {
+            for (let i = 1; i <= maxLoans; i++) {
+                const row = document.getElementById('loan-' + i);
+                if (row) {
+                    row.style.display = (i <= currentLoans) ? 'flex' : 'none';
+                    
+                    // Очищаем поля при скрытии строки
+                    if (i > currentLoans) {
+                        document.getElementById('principal-' + i).value = '';
+                        document.getElementById('rate-' + i).value = '';
+                    }
+                }
+            }
+            document.getElementById('btn-add').disabled = (currentLoans >= maxLoans);
+            document.getElementById('btn-remove').disabled = (currentLoans <= minLoans);
+        }
+
+        // Добавление кредита
+        function addLoan() {
+            if (currentLoans < maxLoans) {
+                currentLoans++;
+                updateVisibility();
+            }
+        }
+
+        // Удаление кредита
+        function removeLoan() {
+            if (currentLoans > minLoans) {
+                currentLoans--;
+                updateVisibility();
+            }
+        }
+
+        // Расчет консолидированной ставки
+        function calculate() {
+            let totalPrincipal = 0;
+            let weightedSum = 0;
+
+            for (let i = 1; i <= currentLoans; i++) {
+                const principalInput = document.getElementById('principal-' + i);
+                const rateInput = document.getElementById('rate-' + i);
+                
+                if (principalInput && rateInput) {
+                    const principal = parseFloat(principalInput.value);
+                    const rate = parseFloat(rateInput.value);
+
+                    if (!isNaN(principal) && principal > 0 && !isNaN(rate) && rate >= 0) {
+                        totalPrincipal += principal;
+                        weightedSum += (principal * rate);
+                    }
+                }
+            }
+
+            const errorElement = document.getElementById('error-msg');
+            const resultElement = document.getElementById('result');
+
+            if (totalPrincipal > 0) {
+                const consolidatedRate = (weightedSum / totalPrincipal).toFixed(2);
+                
+                const formattedPrincipal = totalPrincipal.toLocaleString('ru-RU', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2
+                });
+
+                resultElement.innerHTML = `
+                    Общая сумма долга:<br><strong>${formattedPrincipal} ₽</strong><br><br>
+                    Единая консолидированная ставка:<br><strong>${consolidatedRate} %</strong>
+                `;
+                resultElement.style.display = 'block';
+                errorElement.style.display = 'none';
+            } else {
+                resultElement.style.display = 'none';
+                errorElement.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
