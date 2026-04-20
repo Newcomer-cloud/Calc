@@ -5,211 +5,223 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор консолидированной ставки</title>
     <style>
-        :root {
-            --dark-background: #2B2B2B;
-            --text-primary: #E0E0E0; /* основной текст — светлый серый, хорошая читаемость */
-            --text-secondary: #A0A0A0; /* вторичный текст, подсказки, метки */
-            --border-color: #444444; /* границы и разделители — чуть темнее фона */
-            --card-bg: #3A3A3A; /* фон карточек — светлее основного фона */
-            --input-bg: #4A4A4A; /* фон полей ввода */
-            --button-primary: #5D40C8; /* основной цвет кнопок — фиолетовый акцент */
-            --button-hover: #6E46FF; /* цвет кнопок при наведении */
-            --remove-btn: #F44336; /* кнопка удаления — красный акцент */
-            --remove-hover: #FF5242; /* кнопка удаления при наведении */
-            --result-bg: #333333; /* фон блока с результатом — чуть светлее фона */
-            --shadow-color: rgba(0, 0, 0, 0.3); /* цвет теней */
-        }
-
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--dark-background);
-            color: var(--text-primary);
-            max-width: 800px;
-            margin: 20px auto;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #2B2B2B; /* Ваш цвет фона */
+            color: #E0E0E0; /* Светло-серый текст для комфортного чтения */
+            margin: 0;
             padding: 20px;
-            line-height: 1.6;
-        }
-
-        h1 {
-            color: var(--text-primary);
-            text-align: center;
-            margin-bottom: 30px;
-            font-weight: 600;
-        }
-
-        .credit-row {
             display: flex;
-            gap: 15px;
+            justify-content: center;
             align-items: center;
-            margin-bottom: 12px;
-            padding: 16px;
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #3C3F41; /* Чуть более светлый оттенок для формы */
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 2px 8px var(--shadow-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #4E5254; /* Тонкая рамка контейнера */
         }
-
-        .amount-input, .rate-input {
+        h2 {
+            text-align: center;
+            color: #FFFFFF;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        .loan-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .loan-item span {
+            font-weight: bold;
+            color: #A9B7C6; /* Цвет цифр (как в среде разработки) */
+            width: 20px;
+        }
+        .loan-item input {
             flex: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            padding: 12px;
+            background-color: #2B2B2B; /* Поля ввода в тон общего фона */
+            border: 1px solid #555555; /* Неброская рамка */
+            border-radius: 6px;
             font-size: 14px;
-            color: var(--text-primary);
-            background-color: var(--input-bg);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        .amount-input:focus, .rate-input:focus {
+            color: #FFFFFF;
             outline: none;
-            border-color: var(--button-primary);
-            box-shadow: 0 0 0 2px rgba(93, 64, 200, 0.3);
+            transition: border-color 0.2s;
         }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            font-size: 13px;
+        .loan-item input:focus {
+            border-color: #3498db; /* Синий акцент при нажатии */
         }
-
+        /* Убираем стрелочки у input number для красоты */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
         button {
-            background-color: var(--button-primary);
-            color: white;
+            padding: 10px 18px;
             border: none;
-            padding: 12px 20px;
+            border-radius: 6px;
             cursor: pointer;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            margin-right: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: opacity 0.2s, transform 0.1s;
         }
-
-        button:hover {
-            background-color: var(--button-hover);
+        button:active {
+            transform: scale(0.98);
         }
-
-        .remove-btn {
-            background-color: var(--remove-btn);
-            padding: 8px 12px;
-            font-size: 12px;
+        .btn-add {
+            background-color: #2D5A88;
+            color: #FFFFFF;
         }
-
-        .remove-btn:hover {
-            background-color: var(--remove-hover);
+        .btn-remove {
+            background-color: #8E3535;
+            color: #FFFFFF;
         }
-
+        button:disabled {
+            background-color: #4B4D4D;
+            color: #777777;
+            cursor: not-allowed;
+        }
+        .btn-calc {
+            background-color: #437D52; /* Приглушенный зеленый */
+            color: white;
+            width: 100%;
+            margin-top: 25px;
+            padding: 15px;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
         .result {
             margin-top: 25px;
-            padding: 20px;
-            background-color: var(--result-bg);
-            border-radius: 12px;
-            border-left: 4px solid var(--button-primary);
-            box-shadow: 0 4px 16px var(--shadow-color);
+            padding: 15px;
+            background-color: #313335;
+            border: 1px dashed #555555;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 16px;
+            display: none;
         }
-
-        .result h3 {
-            color: var(--text-primary);
-            margin-top: 0;
-            font-weight: 600;
-        }
-
-        .result p {
-            margin: 10px 0;
-        }
-
         .result strong {
-            color: var(--text-primary);
+            color: #A5C261; /* Салатовый цвет для результата */
+            font-size: 22px;
         }
-
-        .result em {
-            color: var(--text-secondary);
+        .error {
+            color: #BC3F3C;
+            font-size: 14px;
+            margin-top: 15px;
+            text-align: center;
+            display: none;
         }
     </style>
 </head>
 <body>
-    <h1>Калькулятор средневзвешенной ставки</h1>
 
-    <div id="credits-container">
-        <!-- Кредиты будут добавляться здесь -->
-    </div>
+    <div class="container">
+        <h2>Калькулятор средневзвешенной ставки</h2>
+        
+        <div id="loans-container"></div>
 
-    <button onclick="addCredit()">Добавить кредит</button>
-    <button onclick="calculateConsolidatedRate()">Рассчитать средневзвешенную ставку</button>
+        <div class="controls">
+            <button class="btn-remove" id="btn-remove" onclick="removeLoan()" disabled>− Убрать</button>
+            <button class="btn-add" id="btn-add" onclick="addLoan()">+ Добавить</button>
+        </div>
 
-    <div class="result" id="result">
-        <!-- Результат появится здесь -->
+        <button class="btn-calc" onclick="calculate()">Рассчитать ставку</button>
+
+        <div class="error" id="error-msg">Введите корректные данные (долг > 0).</div>
+        <div class="result" id="result"></div>
     </div>
 
     <script>
-        let creditCount = 0;
-        const maxCredits = 6;
+        let currentLoans = 2;
+        const maxLoans = 7;
+        const minLoans = 2;
 
-        function addCredit() {
-            if (creditCount >= maxCredits) {
-                alert(`Можно добавить не более ${maxCredits} кредитов.`);
-                return;
-            }
-
-            creditCount++;
-            const container = document.getElementById('credits-container');
-            const creditDiv = document.createElement('div');
-            creditDiv.className = 'credit-row';
-            creditDiv.innerHTML = `
-                <div>
-                    <label>Кредит ${creditCount} — сумма (руб.):</label>
-                    <input type="number" class="amount-input" id="amount${creditCount}" placeholder="Например, 100 000" required>
-                </div>
-                <div>
-                    <label>Ставка (% годовых):</label>
-                    <input type="number" class="rate-input" id="rate${creditCount}" step="0.01" placeholder="Например, 12.5" required>
-                </div>
-                <button type="button" class="remove-btn" onclick="removeCredit(this)">Удалить</button>
-            `;
-            container.appendChild(creditDiv);
-        }
-
-        function removeCredit(button) {
-            const row = button.closest('.credit-row');
-            row.remove();
-            creditCount--;
-        }
-
-        function calculateConsolidatedRate() {
-            let totalWeightedRate = 0;
-            let totalAmount = 0;
-
-            for (let i = 1; i <= creditCount; i++) {
-                const amount = parseFloat(document.getElementById(`amount${i}`).value);
-                const rate = parseFloat(document.getElementById(`rate${i}`).value);
-
-                if (isNaN(amount) || isNaN(rate) || amount <= 0 || rate <= 0) {
-                    alert(`Проверьте данные по кредиту ${i}. Все поля должны быть заполнены корректными положительными числами.`);
-            return;
-                }
-
-                totalWeightedRate += amount * rate;
-                totalAmount += amount;
-            }
-
-            // Консолидированная ставка = средневзвешенное значение ставок по суммам кредитов
-            const consolidatedRate = totalWeightedRate / totalAmount;
-
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <h3>Результат расчёта:</h3>
-                <p><strong>Общая сумма всех кредитов:</strong> ${totalAmount.toLocaleString('ru-RU')} руб.</p>
-                <p><strong>Консолидированная процентная ставка:</strong> ${consolidatedRate.toFixed(2)}% годовых</p>
-                <p><em>Ставка рассчитана как средневзвешенное значение с учётом сумм кредитов.</em></p>
-            `;
-        }
-
-        // Добавляем два кредита при загрузке страницы (минимум 2)
         window.onload = function() {
-            addCredit();
-            addCredit();
+            const container = document.getElementById('loans-container');
+            let htmlContent = '';
+            for (let i = 1; i <= maxLoans; i++) {
+                let displayStyle = i <= currentLoans ? 'flex' : 'none';
+                htmlContent += `
+                    <div id="loan-${i}" class="loan-item" style="display: ${displayStyle};">
+                        <span>${i}.</span>
+                        <input type="number" id="principal-${i}" placeholder="Долг (₽)" min="0" step="0.01">
+                        <input type="number" id="rate-${i}" placeholder="Ставка (%)" min="0" step="0.01">
+                    </div>
+                `;
+            }
+            container.innerHTML = htmlContent;
         };
+
+        function updateVisibility() {
+            for (let i = 1; i <= maxLoans; i++) {
+                const row = document.getElementById('loan-' + i);
+                if (row) {
+                    row.style.display = (i <= currentLoans) ? 'flex' : 'none';
+                    if (i > currentLoans) {
+                        document.getElementById('principal-' + i).value = '';
+                        document.getElementById('rate-' + i).value = '';
+                    }
+                }
+            }
+            document.getElementById('btn-add').disabled = (currentLoans >= maxLoans);
+            document.getElementById('btn-remove').disabled = (currentLoans <= minLoans);
+        }
+
+        function addLoan() {
+            if (currentLoans < maxLoans) {
+                currentLoans++;
+                updateVisibility();
+            }
+        }
+
+        function removeLoan() {
+            if (currentLoans > minLoans) {
+                currentLoans--;
+                updateVisibility();
+            }
+        }
+
+        function calculate() {
+            let totalPrincipal = 0;
+            let weightedSum = 0;
+
+            for (let i = 1; i <= currentLoans; i++) {
+                const p = parseFloat(document.getElementById('principal-' + i).value);
+                const r = parseFloat(document.getElementById('rate-' + i).value);
+
+                if (!isNaN(p) && p > 0 && !isNaN(r) && r >= 0) {
+                    totalPrincipal += p;
+                    weightedSum += (p * r);
+                }
+            }
+
+            const error = document.getElementById('error-msg');
+            const result = document.getElementById('result');
+
+            if (totalPrincipal > 0) {
+                const resRate = (weightedSum / totalPrincipal).toFixed(2);
+                const resSum = totalPrincipal.toLocaleString('ru-RU');
+                result.innerHTML = `Сумма: <strong>${resSum} ₽</strong>
+Ставка: <strong>${resRate}%</strong>`;
+                result.style.display = 'block';
+                error.style.display = 'none';
+            } else {
+                result.style.display = 'none';
+                error.style.display = 'block';
+            }
+        }
     </script>
 </body>
-</html
+</html>
